@@ -1,0 +1,48 @@
+# Local development — MySQL + Redis for the Adonis app in ./admin
+#
+#   docker compose up -d
+#
+# In admin/.env use: DB_HOST=localhost, REDIS_HOST=localhost, DB_PORT=3306,
+# DB_USER=root, DB_PASSWORD=password, DB_DATABASE=nomad (matches .env.example).
+#
+# Full management stack (admin container, Dozzle, updater, etc.): see
+# install/management_compose.yaml
+
+name: project-nomad-dev
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: nomad_dev_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: nomad
+    ports:
+      - "3306:3306"
+    volumes:
+      - nomad_dev_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 15s
+
+  redis:
+    image: redis:7-alpine
+    container_name: nomad_dev_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - nomad_dev_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  nomad_dev_mysql_data:
+  nomad_dev_redis_data:
